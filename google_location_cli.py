@@ -4,7 +4,7 @@ import datetime
 from math import sin, cos, sqrt, atan2, radians
 
 
-def dist(long1, lat1, long2, lat2):
+def getDistance(long1, lat1, long2, lat2):
 
 	long1 = radians(long1)
 	long2 = radians(long2)
@@ -22,6 +22,13 @@ def dist(long1, lat1, long2, lat2):
 
 	return distance
 
+def printUnique(form):
+	times = set()
+	for time in timestamps:
+		times.add(datetime.datetime.fromtimestamp(int(time)/1000).strftime(form))
+	times = sorted(times)
+	for time in times:
+		print(time)
 
 
 
@@ -37,47 +44,28 @@ if (command == "within"):
 		print("Error: not enough arguements given\nNeed Command Lattitude Longitude")
 	lat = sys.argv[2]
 	lon = sys.argv[3]
+	options = sys.argv[4:]
+	dist = 1
+	for item in options:
+		if (item.isdigit()):
+			dist = int(item)
+			break
 	lon = float(lon)
 	lat = float(lat)
 	timestamps = []
 	with open('LocationHistory.json') as json_file1:
 		data1 = json.load(json_file1)['locations']
 	for location in data1:
-		if(dist(location['longitudeE7'] / 10000000, location['latitudeE7'] / 10000000, lon, lat) < 1):
+		if(getDistance(location['longitudeE7'] / 10000000, location['latitudeE7'] / 10000000, lon, lat) < dist):
 			timestamps.append(location['timestampMs'])
-	if (len(sys.argv) < 5):
+	if (len(options) == 0):
 		for time in timestamps:
 			print(time)
 	elif ("days" in sys.argv):
-		days = set()
-		for time in timestamps:
-			days.add(datetime.datetime.fromtimestamp(int(time)/1000).strftime('%Y-%m-%d'))
-		for day in days:
-			print(day)
+		printUnique('%Y-%m-%d')
 	elif ("months" in sys.argv):
-		months = set()
-		for time in timestamps:
-			months.add(datetime.datetime.fromtimestamp(int(time)/1000).strftime('%Y-%m'))
-		for month in months:
-			print(month)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		printUnique('%Y-%m')
+	elif ("years" in sys.argv):
+		printUnique('%Y')
+	elif ("hours" in sys.argv):
+		printUnique('%Y-%m-%d %H')
